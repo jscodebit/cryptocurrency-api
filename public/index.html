@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Crypto Currency Prices</title>
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+</head>
+<body>
+    <h1>Sample</h1>
+    <div>
+        <input id="currencyTags" type="text">
+        <button id="requestRate">See Rate</button>
+    </div>
+    <div>
+        <select name="selCurrency" id="selCurrency">
+            <option value="USD">USD</option>
+        </select>
+        <button id="allRates">See All</button>
+        <ul id="output"></ul>
+        <ul id="outputCurrentCurrency"></ul>
+    </div>
+</body>
+<script>
+    $(function(){
+        //const availableTags;
+        $.get('/load/', function(data){
+            $('#currencyTags').autocomplete({
+                source:data
+            })
+        })
+    })
+
+
+    const allRateBtn = document.querySelector('#allRates');
+    const requestRatebtn = document.querySelector('#requestRate');
+    const currencyTags = document.querySelector('#currencyTags');
+    const selCurrency = document.querySelector('#selCurrency');
+    const url = 'https://api.coinmarketcap.com/v1/ticker/';
+    const output = document.querySelector('#output');
+    const outputCurrentCurrency = document.querySelector('#outputCurrentCurrency');
+    const currencyCodes = ["AED", "AFN", "ALL", "AMD", "ANG", "AOA", "ARS", "AUD", "AWG", "AZN", "BAM", "BBD", "BDT", "BGN", "BHD", "BIF", "BMD", "BND", "BOB", "BOV", "BRL", "BSD", "BTN", "BWP", "BYR", "BZD", "CAD", "CDF", "CHE", "CHF", "CHW", "CLF", "CLP", "CNY", "COP", "COU", "CRC", "CUC", "CUP", "CVE", "CZK", "DJF", "DKK", "DOP", "DZD", "EGP", "ERN", "ETB", "EUR", "FJD", "FKP", "GBP", "GEL", "GHS", "GIP", "GMD", "GNF", "GTQ", "GYD", "HKD", "HNL", "HRK", "HTG", "HUF", "IDR", "ILS", "INR", "IQD", "IRR", "ISK", "JMD", "JOD", "JPY", "KES", "KGS", "KHR", "KMF", "KPW", "KRW", "KWD", "KYD", "KZT", "LAK", "LBP", "LKR", "LRD", "LSL", "LTL", "LVL", "LYD", "MAD", "MDL", "MGA", "MKD", "MMK", "MNT", "MOP", "MRO", "MUR", "MVR", "MWK", "MXN", "MXV", "MYR", "MZN", "NAD", "NGN", "NIO", "NOK", "NPR", "NZD", "OMR", "PAB", "PEN", "PGK", "PHP", "PKR", "PLN", "PYG", "QAR", "RON", "RSD", "RUB", "RWF", "SAR", "SBD", "SCR", "SDG", "SEK", "SGD", "SHP", "SLL", "SOS", "SRD", "SSP", "STD", "SYP", "SZL", "THB", "TJS", "TMT", "TND", "TOP", "TRY", "TTD", "TWD", "TZS", "UAH", "UGX", "USD", "USN", "USS", "UYI", "UYU", "UZS", "VEF", "VND", "VUV", "WST", "XAF", "XAG", "XAU", "XBA", "XBB", "XBC", "XBD", "XCD", "XDR", "XFU", "XOF", "XPD", "XPF", "XPT", "XTS", "XXX", "YER", "ZAR", "ZMW"];
+
+    for(var i=0; i<currencyCodes.length; i++){
+        var option = document.createElement('option');
+        var textNode = document.createTextNode(currencyCodes[i]);
+        option.appendChild(textNode);
+        option.setAttribute('value', currencyCodes[i]);
+        selCurrency.insertBefore(option, selCurrency.lastChild);
+    }
+
+    allRateBtn.addEventListener('click', getAllRates);
+    requestRatebtn.addEventListener('click', getOneRate);
+
+    function getAllRates(){
+        var curSelValue = selCurrency.value;
+        console.log(curSelValue);
+        var url = '/price/'+ curSelValue;
+        console.log(url);
+        fetch(url).then(function(response){
+            return response.json()
+        }).then(function(data){
+            console.log(data);
+            outputToPage(JSON.parse(data),curSelValue);
+            console.log(JSON.parse(data));
+        }).catch(function(error){
+            console.log(JSON.stringify(error));
+        });
+    }
+    function outputToPage(data, c){
+        output.innerHTML = '';
+        var currencyValue = 'price_'+c.toLowerCase();
+        data.forEach(function(item, i){
+            let li = document.createElement('li');
+            let span = document.createElement('span');
+            let priceFixed = (Math.round(item[currencyValue]*100)/100);
+            span.innerHTML = `${item.name} ${item.symbol} ${priceFixed} ${c}`;
+            li.appendChild(span);
+            output.appendChild(li);
+            console.log(item, i);
+        });
+    }
+    function getOneRate(){
+        var curValue = currencyTags.value;
+        var newurl = 'cyrpto/' + curValue;
+        console.log(newurl);
+        fetch(newurl).then(function(response){
+            return response.json()
+        }).then(function(data){
+            outputOneCur(JSON.parse(data)[0]);
+            console.log(JSON.parse(data)[0]);
+        }).catch(function(error){
+            console.log(JSON.stringify(error));
+        });
+    }
+    function outputOneCur(data){
+        outputCurrentCurrency.innerHTML = '';
+        let html = '<h1>'+data.name+'</h1>'
+        for(key in data) {
+            var keyContent = key.replace('_', '').toUpperCase();
+            var val = data[key];
+            html += '<div>'+keyContent+' : '+val+'</div>';
+            outputCurrentCurrency.innerHTML = html;
+        }
+    }
+</script>
+</html>
