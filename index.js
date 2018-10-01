@@ -35,4 +35,4 @@ app.get('/cyrpto/:cur', function(req, res){
     });
    //res.send('Hello 3');
 });
-app.listen(3000);
+app.listen(process.env.PORT);
